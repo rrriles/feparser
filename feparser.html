@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>FEP Ad Parser/Encoder/Validator</title>
+	</meta>
+	
+	<style type="text/css">
+		body {
+			font-family:"Helvetica", Arial, sans-serif;
+			background-color:#E5F1FC;
+		}
+		a {
+			display:block;
+			width:20px;
+			height:20px;
+		}
+		div.colorBox {
+			float:left;
+			width:20px;
+			height:20px;
+			margin-top:3px;
+			margin-left:5px;
+			background-color:#606060;
+		}
+		div.httpStatus {
+			float:left;
+			margin-top:3px;
+			margin-left:5px;
+		}
+		label {
+			margin-top:3px;
+		}
+		input.adPath, input.thirdParty {
+			width:400px;
+		}
+		input.checkBox {
+			display:block;
+			margin-left:auto;
+			margin-right:auto;
+		}
+		#outputTable {
+		background-color:#FFF;
+		border:none;
+		}
+		#outputTable td {
+		border:1px solid #A9A9A9;
+		padding: 4px;
+		}
+		.orange {
+		color:#FB7408;
+		}
+		.blue {
+		color:#4E8EC7;
+		}
+	</style>
+	
+	<!--load jQuery library-->
+	<script src="jquery-1.6.min.js"></script>
+	
+	<script type="text/javascript">
+	//<![CDATA[
+		//declare global vars
+		var outputText;
+		var outputTable;
+		var genPreroll = 'http://cdn.video.abc.com/streaming/ads/abccom/abc_generic_preroll_20071031_500x282_400kbps_f8.flv';
+		var genLogo = 'http://cdn.video.abc.com/streaming/ads/abccom/abcfep_300x60.jpg';
+		var genLogoClick = 'http://abc.go.com/';
+		var genPauseAd = 'http://cdn.video.abc.com/streaming/ads/abccom/house_pause_ad2011.swf';
+				
+		function feParse() {
+			//declare local vars
+			var labelTitle;
+			var genCheck;
+			var inputClass;
+			var inputId;
+			var inputValue;
+			var statusDiv;
+			var colorDiv;
+			var colorA;
+			//clear results
+			$('textarea').text("");
+			outputText = "";
+			$('table#outputTable').text("");
+			outputTable = "";
+			//process each <tr> in the form
+			$('tr').each(function() {
+				//get values for vars
+				labelTitle = $(this).children('td').children('label').attr('title');
+				genCheck = $(this).children('td').children('input.checkBox').is(':checked');
+				inputClass = $(this).children('td').children('input:not(.checkBox)').attr('class');
+				inputId = $(this).children('td').children('input:not(.checkBox)').attr('id');
+				inputValue = $(this).children('td').children('input:not(.checkBox)').val();
+				statusDiv = $(this).children('td').children('div.httpStatus').attr('id');
+				colorDiv = $(this).children('td').children('div.colorBox').attr('id');
+				colorA = $(this).children('td').children('div.colorBox').children('a').attr('id');
+				//remove whitespace from start and end of URL
+				if(inputValue != $.trim(inputValue)) {
+					inputValue = $.trim(inputValue);
+					$('input#'+inputId).val(inputValue);
+				};
+				//check for generic checkboxes; replace path if checked
+				if(genCheck) {
+					if(inputId == 'inputPreroll') {
+						inputValue = genPreroll;
+						$('input#'+inputId).val(genPreroll);
+					};
+					if(inputId == 'inputLogo') {
+						inputValue = genLogo;
+						$('input#'+inputId).val(genLogo);
+					};
+					if(inputId == 'inputLogoClick') {
+						inputValue = genLogoClick;
+						$('input#'+inputId).val(genLogoClick);
+					};
+					if(inputId == 'inputPauseAd') {
+						inputValue = genPauseAd;
+						$('input#'+inputId).val(genPauseAd);
+					};
+				};
+				//set href and target for colorbox <a> element
+				$('a#'+colorA).replaceWith('<a id="'+colorA+'" href="'+inputValue+'" target="new"></a>');
+				//for each ad path: check HTTP status, encode characters, display parser-friendly code
+				if(inputClass == 'adPath') {
+					//set blank fields to "/" and display warning
+					if(inputValue == '' || inputValue == '/') {
+						$('input#'+inputId).val('/');
+						$('div#'+statusDiv).text('No Path');
+						$('div#'+colorDiv).css('background-color','#FFFF00');
+						encodeChars('/',labelTitle+' PATH');
+						encodeChars('',labelTitle+' FILE');
+					}
+					//check for Unicast container swf
+					else if(inputValue.match(/.*vwadpath=.+/)) {
+						var unicastUrl = inputValue.substr(inputValue.indexOf('vwadpath=')+9);
+						requestUrl(unicastUrl,statusDiv,colorDiv);
+						parseUrl(inputValue,labelTitle);
+					}
+					else {
+						requestUrl(inputValue,statusDiv,colorDiv);
+						parseUrl(inputValue,labelTitle);
+					};
+				};
+				//for each 3rd-party path: encode characters, display parser-friendly code
+				if(inputClass == 'thirdParty') {
+					//set blank fields to "/" and display warning
+					if(inputValue == '' || inputValue == '/') {
+						$('input#'+inputId).val('/');
+						$('div#'+statusDiv).text('No Path');
+						$('div#'+colorDiv).css('background-color','#FFFF00');
+						encodeChars('/',labelTitle);
+					}
+					else {
+						requestUrl(inputValue,statusDiv,colorDiv);
+						encodeChars(inputValue,labelTitle);
+					};
+				};
+			})
+			$('textarea').text(outputText);
+			$('table#outputTable').html(outputTable);
+		}
+				
+		//use JSON response from Yahoo Query Language request to deermine whether path is valid; display results in appropriate 'httpStatus' <div>
+		function requestUrl(url,statusDiv,colorDiv) {
+			//create YQL URL
+			var yqlUrl = 'http://query.yahooapis.com/v1/public/yql?'+'q=select%20*%20from%20html%20where%20url%3D%22'+encodeURIComponent(url)+'%22&diagnostics=true&format=json&callback=?';
+			//set timeout in ms
+			$.ajaxSetup( {
+				timeout: '2000'
+			});
+			//make GET request to YQL, load returned data into "data" object
+			$.getJSON(yqlUrl, function(data) {
+				//check if an invalid URL error was returned; if so, report failure and display error
+				if (data.error != undefined) {
+					$('div#'+statusDiv).text(data.error.description.substr(0,64));
+					$('div#'+colorDiv).css('background-color','#FF0000');
+					clickableColorBox(url,colorDiv);
+				}
+				//check HTTP status code; report success if = 200,301,302
+				else if (data.query.diagnostics.url['http-status-code'] == '200' || data.query.diagnostics.url['http-status-code'] == '301' == data.query.diagnostics.url['http-status-code'] == '302') {
+					$('div#'+statusDiv).text('Success!');
+					$('div#'+colorDiv).css('background-color','#00FF00');
+					clickableColorBox(url,colorDiv);
+				}
+				//check for absence of diagnostics url error; if absent, report success
+				else if (data.query.diagnostics.url.error == undefined) {
+					$('div#'+statusDiv).text('Success!');
+					$('div#'+colorDiv).css('background-color','#00FF00');
+					clickableColorBox(url,colorDiv);
+				}
+				//otherwise report failure and display url error
+				else {
+					$('div#'+statusDiv).text(data.query.diagnostics.url.error.substr(0,64));
+					$('div#'+colorDiv).css('background-color','#FF0000');
+					clickableColorBox(url,colorDiv);
+				};
+			});
+		}
+		
+		//make the target of colorBox <a> tag = input URL
+		function clickableColorBox(url,colorDiv) {
+			
+		}			
+		
+		//separate ad URLs into path and file, then encode characters
+		function parseUrl(url,labelTitle) {
+			var pathName = labelTitle+' PATH';
+			var fileName = labelTitle+' FILE';
+			var urlPath = url.substring(0,url.lastIndexOf('/')+1);
+			var urlFile = url.substring(url.lastIndexOf('/')+1);
+			encodeChars(urlPath,pathName);
+			encodeChars(urlFile,fileName);
+		}
+		
+		//encode special characters (&, |, space), replace old CDN subdomain and timestamps, and output parser code
+		function encodeChars(inputValue,parserName) {
+			var encodedUrl = inputValue;
+			encodedUrl = encodedUrl.replace(/\&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
+			encodedUrl = encodedUrl.replace(/\|/g, "%7C");
+			encodedUrl = encodedUrl.replace(/\s/g, "%20");
+			encodedUrl = encodedUrl.replace(/ll\.media/, "cdn.video");
+			encodedUrl = encodedUrl.replace(/%timestamp%/g, '%TIME%');
+			encodedUrl = encodedUrl.replace(/\[timestamp\]/g, '%TIME%');
+			encodedUrl = encodedUrl.replace(/%5[Bb]timestamp%5[Dd]/g, '%TIME%');
+			outputText += '*BEGIN '+parserName+'*'+encodedUrl+'*END '+parserName+'* ';
+			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
+			outputTable += '<tr><td>'+parserName+'</td><td>'+encodedUrl+'</td></tr>';
+		}
+
+	//]]>
+	</script>
+	
+</head>
+
+<body>
+	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator</span></h1>
+	
+	<form action="#" onsubmit="feParse(); return false;">
+		<div>
+			<table width="100%" border="0">
+				<tr class="blue">
+					<th width="180px" align="left">Ad Unit</td>
+					<th width="75px" align="left">Generic</td>
+					<th width="400px" align="left">Path</td>
+					<th width="auto" align="left">Results</td>
+				</tr>
+				<tr>
+					<td><label title="PREROLL" for="inputPreroll">PREROLL:</label></td>
+					<td><input class="checkBox" type="checkbox" name="genericPreroll" /></td>
+					<td><input class="adPath" id="inputPreroll" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPreroll"><a id="clickPreroll" href="#"></a></div><div class="httpStatus" id="statusPreroll"></div></td>
+				</tr>
+				<tr>
+					<td><label title="LOGO" for="inputLogo">LOGO:</label></td>
+					<td><input class="checkBox" type="checkbox" name="genericLogo" /></td>
+					<td><input class="adPath" id="inputLogo" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorLogo"><a id="clickLogo" href="#"></a></div><div class="httpStatus" id="statusLogo"></div></td>
+				</tr>
+				<tr>
+					<td><label title="LOGOTRACKING" for="inputLogoTracking">LOGO TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputLogoTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorLogoTracking"><a id="clickLogoTracking" href="#"></a></div><div class="httpStatus" id="statusLogoTracking"></div></td>
+				</tr>
+				<tr>
+					<td><label title="LOGOCLICK" for="inputLogoClick">LOGO CLICK:</label></td>
+					<td><input class="checkBox" type="checkbox" name="genericLogoClick" /></td>
+					<td><input class="thirdParty" id="inputLogoClick" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorLogoClick"><a id="clickLogoClick" href="#"></a></div><div class="httpStatus" id="statusLogoClick"></div></td>
+				</tr>
+				<tr>
+					<td><label title="ADPOD" for="inputAdPod">AD POD:</label></td>
+					<td></td>
+					<td><input class="adPath" id="inputAdPod" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorAdPod"><a id="clickAdPod" href="#"></a></div><div class="httpStatus" id="statusAdPod"></div></td>
+				</tr>
+				<tr>
+					<td><label title="ADPODTRACKING" for="inputAdPodTracking">AD POD TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputAdPodTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorAdPodTracking"><a id="clickAdPodTracking" href="#"></a></div><div class="httpStatus" id="statusAdPodTracking"></div></td>
+				</tr>
+				<tr>
+					<td><label title="PAUSEAD" for="inputPauseAd">PAUSE AD:</label></td>
+					<td><input class="checkBox" type="checkbox" name="genericPauseAd" /></td>
+					<td><input class="adPath" id="inputPauseAd" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPauseAd"><a id="clickPauseAd" href="#"></a></div><div class="httpStatus" id="statusPauseAd"></div></td>
+				</tr>
+				<tr>
+					<td><label title="PAUSEADTRACKING" for="inputPauseAdTracking">PAUSE AD TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputPauseAdTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPauseAdTracking"><a id="clickPauseAdTracking" href="#"></a></div><div class="httpStatus" id="statusPauseAdTracking"></div></td>
+				</tr>
+			</table>
+			<input type="submit" value="Go!" style="width:50px">
+		</div>
+	</form>
+	<br />
+	<div><h2 class="blue">Parser-friendly code:</h2></div>
+	<div id="output">
+	<textarea name="output" cols="100" rows="20" wrap="SOFT">Click "Go!" to get your code.</textarea>
+	</div>
+	<div><h2 class="blue">Human-friendly code:</h2></div>
+	<div>
+	<table id="outputTable"></table>
+	</div>
+
+</body>
