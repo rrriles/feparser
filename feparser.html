@@ -58,8 +58,14 @@
 	<!--load jQuery library-->
 	<script src="jquery-1.6.min.js"></script>
 	
+	<!--load ZeroClipboard library-->
+	<script src="ZeroClipboard.js"></script>
+	
 	<script type="text/javascript">
 	//<![CDATA[
+		//load ZeroClipboard swf for "copy" button functionality
+		ZeroClipboard.setMoviePath('ZeroClipboard10.swf');
+		//Attach ZeroClipboard swf to copy button
 		//declare global vars
 		var outputText;
 		var outputTable;
@@ -67,6 +73,7 @@
 		var genLogo = 'http://cdn.video.abc.com/streaming/ads/abccom/abcfep_300x60.jpg';
 		var genLogoClick = 'http://abc.go.com/';
 		var genPauseAd = 'http://cdn.video.abc.com/streaming/ads/abccom/house_pause_ad2011.swf';
+		var clipParser = new ZeroClipboard.Client();
 				
 		function feParse() {
 			//declare local vars
@@ -157,6 +164,8 @@
 				};
 			})
 			$('textarea').text(outputText);
+			clipParser.setText(outputText);
+			clipParser.glue('clipParserDiv', 'clipParserButton');
 			$('table#outputTable').html(outputTable);
 		}
 				
@@ -233,7 +242,7 @@
 </head>
 
 <body>
-	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator</span></h1>
+	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.0</span></h1>
 	
 	<form action="#" onsubmit="feParse(); return false;">
 		<div>
@@ -299,7 +308,10 @@
 	<br />
 	<div><h2 class="blue">Parser-friendly code:</h2></div>
 	<div id="output">
-	<textarea name="output" cols="100" rows="20" wrap="SOFT">Click "Go!" to get your code.</textarea>
+		<textarea name="output" cols="100" rows="20" wrap="SOFT">Click "Go!" to get your code.</textarea>
+		<div id="clipParserDiv">
+			<button type="button" id="clipParserButton">Copy</button>
+		</div>
 	</div>
 	<div><h2 class="blue">Human-friendly code:</h2></div>
 	<div>
