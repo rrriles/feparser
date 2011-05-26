@@ -194,11 +194,12 @@
 					};
 				};
 			})
-			$('textarea').text(outputText);
-			clipParser.setText(outputText);
+			$('textarea').text(outputText); //dump parser text to textbox
+			clipParser.setText(outputText); //set copy button url
 			$('#clipParserDiv').children('div').not('#clipParserButton').remove(); //remove existing clip div
 			clipParser.glue('clipParserButton', 'clipParserDiv'); //Attach ZeroClipboard swf to copy button
-			$('table#outputTable').html(outputTable);
+			$('table#outputTable').html(outputTable); //dump table html
+			//set copy buttons for table values
 			$('table#outputTable').children('tbody').children('tr').each(function(i){
 				clipTable[i] = new ZeroClipboard.Client();
 				clipTable[i].setText($(this).children('td.url').text());
@@ -221,25 +222,21 @@
 				if (data.error != undefined) {
 					$('div#'+statusDiv).text(data.error.description.substr(0,64));
 					$('div#'+colorDiv).css('background-color','#FF0000');
-					clickableColorBox(url,colorDiv);
 				}
 				//check HTTP status code; report success if = 200,301,302
 				else if (data.query.diagnostics.url['http-status-code'] == '200' || data.query.diagnostics.url['http-status-code'] == '301' == data.query.diagnostics.url['http-status-code'] == '302') {
 					$('div#'+statusDiv).text('Success!');
 					$('div#'+colorDiv).css('background-color','#00FF00');
-					clickableColorBox(url,colorDiv);
 				}
 				//check for absence of diagnostics url error; if absent, report success
 				else if (data.query.diagnostics.url.error == undefined) {
 					$('div#'+statusDiv).text('Success!');
 					$('div#'+colorDiv).css('background-color','#00FF00');
-					clickableColorBox(url,colorDiv);
 				}
 				//otherwise report failure and display url error
 				else {
 					$('div#'+statusDiv).text(data.query.diagnostics.url.error.substr(0,64));
 					$('div#'+colorDiv).css('background-color','#FF0000');
-					clickableColorBox(url,colorDiv);
 				};
 			});
 		}
@@ -268,7 +265,6 @@
 			outputText += '*BEGIN '+parserName+'*'+encodedUrl+'*END '+parserName+'* ';
 			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
 			outputTable += '<tr><td class="name">'+parserName+'</td><td class="url">'+encodedUrl+'</td><td class="clipTd"><div id="clipDiv'+clipId+'" class="clipDiv"><div id="clipButton'+clipId+'" class="clip">Copy</div></div></td></tr>';
-			clipTable
 		}
 
 	//]]>
