@@ -53,6 +53,19 @@
 		.blue {
 		color:#4E8EC7;
 		}
+		.clip {
+			width:100px; 
+			text-align:center; 
+			border:1px solid black; 
+			background-color:#ccc; 
+			margin:10px; padding:10px; 
+        }
+        .clip.hover {
+		background-color:#eee;
+		}
+        .clip.active {
+		background-color:#aaa;
+		}
 	</style>
 	
 	<!--load jQuery library-->
@@ -164,8 +177,8 @@
 				};
 			})
 			$('textarea').text(outputText);
-			clipParser.setText(outputText);
-			clipParser.glue('clipParserDiv', 'clipParserButton');
+			//clipParser.setText(outputText);
+			//clipParser.glue('clipParserDiv');
 			$('table#outputTable').html(outputTable);
 		}
 				
@@ -266,16 +279,16 @@
 					<td><div class="colorBox" id="colorLogo"><a id="clickLogo" href="#"></a></div><div class="httpStatus" id="statusLogo"></div></td>
 				</tr>
 				<tr>
-					<td><label title="LOGOTRACKING" for="inputLogoTracking">LOGO TRACKING:</label></td>
-					<td></td>
-					<td><input class="thirdParty" id="inputLogoTracking" type="text" value="" /></td>
-					<td><div class="colorBox" id="colorLogoTracking"><a id="clickLogoTracking" href="#"></a></div><div class="httpStatus" id="statusLogoTracking"></div></td>
-				</tr>
-				<tr>
 					<td><label title="LOGOCLICK" for="inputLogoClick">LOGO CLICK:</label></td>
 					<td><input class="checkBox" type="checkbox" name="genericLogoClick" /></td>
 					<td><input class="thirdParty" id="inputLogoClick" type="text" value="" /></td>
 					<td><div class="colorBox" id="colorLogoClick"><a id="clickLogoClick" href="#"></a></div><div class="httpStatus" id="statusLogoClick"></div></td>
+				</tr>
+				<tr>
+					<td><label title="LOGOTRACKING" for="inputLogoTracking">LOGO TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputLogoTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorLogoTracking"><a id="clickLogoTracking" href="#"></a></div><div class="httpStatus" id="statusLogoTracking"></div></td>
 				</tr>
 				<tr>
 					<td><label title="ADPOD" for="inputAdPod">AD POD:</label></td>
@@ -309,9 +322,11 @@
 	<div><h2 class="blue">Parser-friendly code:</h2></div>
 	<div id="output">
 		<textarea name="output" cols="100" rows="20" wrap="SOFT">Click "Go!" to get your code.</textarea>
-		<div id="clipParserDiv">
-			<button type="button" id="clipParserButton">Copy</button>
+<!--
+		<div id="clipParserDiv" class="clip">
+			Copy
 		</div>
+-->
 	</div>
 	<div><h2 class="blue">Human-friendly code:</h2></div>
 	<div>
