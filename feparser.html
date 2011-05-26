@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>FEP Ad Parser/Encoder/Validator 1.0</title>
+		<title>FEP Ad Parser/Encoder/Validator 1.01</title>
 	</meta>
 	
 	<style type="text/css">
@@ -40,12 +40,24 @@
 			margin-right:auto;
 		}
 		#outputTable {
-		background-color:#FFF;
-		border:none;
+			background-color:#E5F1FC;
+			border:none;
+			max-width:825px;
 		}
 		#outputTable td {
-		border:1px solid #A9A9A9;
-		padding: 4px;
+			background-color:#FFF;
+			border:1px solid #A9A9A9;
+			padding:4px;
+		}
+		#outputTable td.clipTd {
+			background-color:#ccc; 
+			padding:0px;
+		}
+		#outputTable td div.clip {
+			padding:4px;
+		}
+		.clipDiv {
+			padding:0px;
 		}
 		.orange {
 		color:#FB7408;
@@ -53,24 +65,30 @@
 		.blue {
 		color:#4E8EC7;
 		}
-		.clip {
-			width:100px; 
+		#clipParserButton {
+			width:50px;
 			text-align:center; 
 			border:1px solid black; 
 			background-color:#ccc; 
-			margin:10px; padding:10px; 
-        }
+			padding:2px; 
+			margin:10px;
+		}
+		#clipParserButton.hover {
+			background-color:#eee;
+		}
+		#clipParserButton.active {
+			background-color:#aaa;
+		}
         .clip.hover {
-		background-color:#eee;
+			background-color:#eee;
 		}
         .clip.active {
-		background-color:#aaa;
+			background-color:#aaa;
 		}
 	</style>
 	
 	<!--load jQuery library-->
 	<script src="jquery-1.6.min.js"></script>
-	
 	<!--load ZeroClipboard library-->
 	<script src="ZeroClipboard.js"></script>
 	
@@ -78,7 +96,6 @@
 	//<![CDATA[
 		//load ZeroClipboard swf for "copy" button functionality
 		ZeroClipboard.setMoviePath('ZeroClipboard10.swf');
-		//Attach ZeroClipboard swf to copy button
 		//declare global vars
 		var outputText;
 		var outputTable;
@@ -87,6 +104,7 @@
 		var genLogoClick = 'http://abc.go.com/';
 		var genPauseAd = 'http://cdn.video.abc.com/streaming/ads/abccom/house_pause_ad2011.swf';
 		var clipParser = new ZeroClipboard.Client();
+		var clipTable = [];
 				
 		function feParse() {
 			//declare local vars
@@ -147,8 +165,8 @@
 						$('input#'+inputId).val('/');
 						$('div#'+statusDiv).text('No Path');
 						$('div#'+colorDiv).css('background-color','#FFFF00');
-						encodeChars('/',labelTitle+' PATH');
-						encodeChars('',labelTitle+' FILE');
+						encodeChars('/',labelTitle+' PATH',labelTitle+'PATH');
+						encodeChars('',labelTitle+' FILE',labelTitle+'FILE');
 					}
 					//check for Unicast container swf
 					else if(inputValue.match(/.*vwadpath=.+/)) {
@@ -168,18 +186,25 @@
 						$('input#'+inputId).val('/');
 						$('div#'+statusDiv).text('No Path');
 						$('div#'+colorDiv).css('background-color','#FFFF00');
-						encodeChars('/',labelTitle);
+						encodeChars('/',labelTitle,labelTitle);
 					}
 					else {
 						requestUrl(inputValue,statusDiv,colorDiv);
-						encodeChars(inputValue,labelTitle);
+						encodeChars(inputValue,labelTitle,labelTitle);
 					};
 				};
 			})
 			$('textarea').text(outputText);
-			//clipParser.setText(outputText);
-			//clipParser.glue('clipParserDiv');
+			clipParser.setText(outputText);
+			$('#clipParserDiv').children('div').not('#clipParserButton').remove(); //remove existing clip div
+			clipParser.glue('clipParserButton', 'clipParserDiv'); //Attach ZeroClipboard swf to copy button
 			$('table#outputTable').html(outputTable);
+			$('table#outputTable').children('tbody').children('tr').each(function(i){
+				clipTable[i] = new ZeroClipboard.Client();
+				clipTable[i].setText($(this).children('td.url').text());
+				$(this).children('td').children('div.clipDiv').children('div').not('.clip').remove();
+				clipTable[i].glue($(this).children('td').children('div.clipDiv').children('div.clip').attr('id'),$(this).children('td').children('div.clipDiv').attr('id'));
+			});
 		}
 				
 		//use JSON response from Yahoo Query Language request to deermine whether path is valid; display results in appropriate 'httpStatus' <div>
@@ -219,24 +244,20 @@
 			});
 		}
 		
-		//make the target of colorBox <a> tag = input URL
-		function clickableColorBox(url,colorDiv) {
-			
-		}			
-		
 		//separate ad URLs into path and file, then encode characters
 		function parseUrl(url,labelTitle) {
 			var pathName = labelTitle+' PATH';
 			var fileName = labelTitle+' FILE';
 			var urlPath = url.substring(0,url.lastIndexOf('/')+1);
 			var urlFile = url.substring(url.lastIndexOf('/')+1);
-			encodeChars(urlPath,pathName);
-			encodeChars(urlFile,fileName);
+			encodeChars(urlPath,pathName,labelTitle+'PATH');
+			encodeChars(urlFile,fileName,labelTitle+'FILE');
 		}
 		
 		//encode special characters (&, |, space), replace old CDN subdomain and timestamps, and output parser code
-		function encodeChars(inputValue,parserName) {
+		function encodeChars(inputValue,parserName,clipId) {
 			var encodedUrl = inputValue;
+			var clipParser = new ZeroClipboard.Client();
 			encodedUrl = encodedUrl.replace(/\&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
 			encodedUrl = encodedUrl.replace(/\|/g, "%7C");
 			encodedUrl = encodedUrl.replace(/\s/g, "%20");
@@ -246,7 +267,8 @@
 			encodedUrl = encodedUrl.replace(/%5[Bb]timestamp%5[Dd]/g, '%TIME%');
 			outputText += '*BEGIN '+parserName+'*'+encodedUrl+'*END '+parserName+'* ';
 			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
-			outputTable += '<tr><td>'+parserName+'</td><td>'+encodedUrl+'</td></tr>';
+			outputTable += '<tr><td class="name">'+parserName+'</td><td class="url">'+encodedUrl+'</td><td class="clipTd"><div id="clipDiv'+clipId+'" class="clipDiv"><div id="clipButton'+clipId+'" class="clip">Copy</div></div></td></tr>';
+			clipTable
 		}
 
 	//]]>
@@ -255,7 +277,7 @@
 </head>
 
 <body>
-	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.0</span></h1>
+	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.01</span></h1>
 	
 	<form action="#" onsubmit="feParse(); return false;">
 		<div>
@@ -322,11 +344,9 @@
 	<div><h2 class="blue">Parser-friendly code:</h2></div>
 	<div id="output">
 		<textarea name="output" cols="100" rows="20" wrap="SOFT">Click "Go!" to get your code.</textarea>
-<!--
-		<div id="clipParserDiv" class="clip">
-			Copy
+		<div id="clipParserDiv" style="position:relative">
+			<div id="clipParserButton" class="clip">Copy</div>
 		</div>
--->
 	</div>
 	<div><h2 class="blue">Human-friendly code:</h2></div>
 	<div>
