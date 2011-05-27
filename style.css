@@ -46,10 +46,24 @@ color:#4E8EC7;
 .clip.active {
 	background-color:#aaa;
 }
+.clip.visited {
+	background-color:#888;
+}
 #outputTable {
 	background-color:#E5F1FC;
 	border:none;
-	max-width:825px;
+	width:850px;
+	table-layout:fixed;
+	word-wrap:break-word;
+}
+#outputTable td.name {
+	width:160px;
+}
+#outputTable td.url {
+	width:600px;
+}
+#outputTable td.clipTd {
+	width:45px;
 }
 #outputTable td {
 	background-color:#FFF;

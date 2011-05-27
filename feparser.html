@@ -85,8 +85,9 @@
 						$('input#'+inputId).val('/');
 						$('div#'+statusDiv).text('No Path');
 						$('div#'+colorDiv).css('background-color','#FFFF00');
-						encodeChars('/',labelTitle+' PATH',labelTitle+'PATH');
-						encodeChars('',labelTitle+' FILE',labelTitle+'FILE');
+						parseUrl('/',labelTitle);
+						//encodeChars('',labelTitle+' FILE',labelTitle+'FILE');
+						//encodeChars('/',labelTitle+' PATH',labelTitle+'PATH');
 					}
 					//check for Unicast container swf
 					else if(inputValue.match(/.*vwadpath=.+/)) {
@@ -119,7 +120,7 @@
 			$('#clipParserDiv').children('div').not('#clipParserButton').remove(); //remove existing clip div
 			clipParser.glue('clipParserButton', 'clipParserDiv'); //Attach ZeroClipboard swf to copy button
 			$('table#outputTable').html(outputTable); //dump table html
-			//set copy buttons for table values
+			//set and map ZeroClipboard swfs for each table row
 			$('table#outputTable').children('tbody').children('tr').each(function(i){
 				clipTable[i] = new ZeroClipboard.Client();
 				clipTable[i].setText($(this).children('td.url').text());
@@ -163,15 +164,13 @@
 		
 		//separate ad URLs into path and file, then encode characters
 		function parseUrl(url,labelTitle) {
-			var pathName = labelTitle+' PATH';
-			var fileName = labelTitle+' FILE';
 			var urlPath = url.substring(0,url.lastIndexOf('/')+1);
 			var urlFile = url.substring(url.lastIndexOf('/')+1);
-			encodeChars(urlPath,pathName,labelTitle+'PATH');
-			encodeChars(urlFile,fileName,labelTitle+'FILE');
+			encodeChars(urlFile,labelTitle+' FILE',labelTitle+'FILE');
+			encodeChars(urlPath,labelTitle+' PATH',labelTitle+'PATH');
 		}
 		
-		//encode special characters (&, |, space), replace old CDN subdomain and timestamps, and output parser code
+		//encode special characters (&, |, space), replace old CDN subdomain and timestamps, then output parser code and table
 		function encodeChars(inputValue,parserName,clipId) {
 			var encodedUrl = inputValue;
 			var clipParser = new ZeroClipboard.Client();
@@ -194,7 +193,6 @@
 
 <body>
 	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.01</span></h1>
-	
 	<form action="#" onsubmit="feParse(); return false;">
 		<div>
 			<table width="100%" border="0">
@@ -265,8 +263,5 @@
 		</div>
 	</div>
 	<div><h2 class="blue">Human-friendly code:</h2></div>
-	<div>
-	<table id="outputTable"></table>
-	</div>
-
+	<div><table id="outputTable"></table></div>
 </body>
