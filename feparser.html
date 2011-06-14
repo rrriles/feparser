@@ -41,6 +41,11 @@
 			outputText = "";
 			$('table#outputTable').text("");
 			outputTable = "";
+			//copy AdPod & AdPodTracking values to hidden AdPodZero and Postroll rows
+			$('input#inputAdPodZero').val($('input#inputAdPod').val());
+			$('input#inputAdPodZeroTracking').val($('input#inputAdPodTracking').val());
+			$('input#inputPostroll').val($('input#inputAdPod').val());
+			$('input#inputPostrollTracking').val($('input#inputAdPodTracking').val());
 			//process each <tr> in the form
 			$('tr').each(function() {
 				//get values for vars
@@ -79,18 +84,16 @@
 				//set href and target for colorbox <a> element
 				$('a#'+colorA).replaceWith('<a id="'+colorA+'" href="'+inputValue+'" target="new"></a>');
 				//for each ad path: check HTTP status, encode characters, display parser-friendly code
-				if(inputClass == 'adPath') {
+				if (inputClass == 'adPath') {
 					//set blank fields to "/" and display warning
-					if(inputValue == '' || inputValue == '/') {
+					if (inputValue == '' || inputValue == '/') {
 						$('input#'+inputId).val('/');
 						$('div#'+statusDiv).text('No Path');
 						$('div#'+colorDiv).css('background-color','#FFFF00');
 						parseUrl('/',labelTitle);
-						//encodeChars('',labelTitle+' FILE',labelTitle+'FILE');
-						//encodeChars('/',labelTitle+' PATH',labelTitle+'PATH');
 					}
 					//check for Unicast container swf
-					else if(inputValue.match(/.*vwadpath=.+/)) {
+					else if (inputValue.match(/.*vwadpath=.+/)) {
 						var unicastUrl = inputValue.substr(inputValue.indexOf('vwadpath=')+9);
 						requestUrl(unicastUrl,statusDiv,colorDiv);
 						parseUrl(inputValue,labelTitle);
@@ -166,8 +169,8 @@
 		function parseUrl(url,labelTitle) {
 			var urlPath = url.substring(0,url.lastIndexOf('/')+1);
 			var urlFile = url.substring(url.lastIndexOf('/')+1);
-			encodeChars(urlFile,labelTitle+' FILE',labelTitle+'FILE');
-			encodeChars(urlPath,labelTitle+' PATH',labelTitle+'PATH');
+			encodeChars(urlFile,labelTitle+'_FILE',labelTitle+'FILE');
+			encodeChars(urlPath,labelTitle+'_PATH',labelTitle+'PATH');
 		}
 		
 		//encode special characters (&, |, space), replace old CDN subdomain and timestamps, then output parser code and table
@@ -181,6 +184,7 @@
 			encodedUrl = encodedUrl.replace(/%timestamp%/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/\[timestamp\]/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/%5[Bb]timestamp%5[Dd]/g, '%TIME%');
+			encodedUrl = encodedUrl.replace(/\[RANDOM\]/g, '%TIME%');
 			outputText += '*BEGIN '+parserName+'*'+encodedUrl+'*END '+parserName+'* ';
 			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
 			outputTable += '<tr><td class="name">'+parserName+'</td><td class="url">'+encodedUrl+'</td><td class="clipTd"><div id="clipDiv'+clipId+'" class="clipDiv"><div id="clipButton'+clipId+'" class="clip">Copy</div></div></td></tr>';
@@ -215,28 +219,52 @@
 					<td><div class="colorBox" id="colorLogo"><a id="clickLogo" href="#"></a></div><div class="httpStatus" id="statusLogo"></div></td>
 				</tr>
 				<tr>
-					<td><label title="LOGOCLICK" for="inputLogoClick">LOGO CLICK:</label></td>
+					<td><label title="LOGO_GOTO" for="inputLogoClick">LOGO CLICK:</label></td>
 					<td><input class="checkBox" type="checkbox" name="genericLogoClick" /></td>
 					<td><input class="thirdParty" id="inputLogoClick" type="text" value="" /></td>
 					<td><div class="colorBox" id="colorLogoClick"><a id="clickLogoClick" href="#"></a></div><div class="httpStatus" id="statusLogoClick"></div></td>
 				</tr>
 				<tr>
-					<td><label title="LOGOTRACKING" for="inputLogoTracking">LOGO TRACKING:</label></td>
+					<td><label title="LOGO_TRACKING" for="inputLogoTracking">LOGO TRACKING:</label></td>
 					<td></td>
 					<td><input class="thirdParty" id="inputLogoTracking" type="text" value="" /></td>
 					<td><div class="colorBox" id="colorLogoTracking"><a id="clickLogoTracking" href="#"></a></div><div class="httpStatus" id="statusLogoTracking"></div></td>
 				</tr>
+				<tr class="hide">
+					<td><label title="ADPODZERO" for="inputAdPod">AD POD:</label></td>
+					<td></td>
+					<td><input class="adPath" id="inputAdPodZero" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorAdPodZero"><a id="clickAdPodZero" href="#"></a></div><div class="httpStatus" id="statusAdPodZero"></div></td>
+				</tr>
+				<tr class="hide">
+					<td><label title="ADPODZERO_TRACKING" for="inputAdPodZeroTracking">AD POD TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputAdPodZeroTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorAdPodZeroTracking"><a id="clickAdPodZeroTracking" href="#"></a></div><div class="httpStatus" id="statusAdPodZeroTracking"></div></td>
+				</tr>
 				<tr>
-					<td><label title="ADPOD" for="inputAdPod">AD POD:</label></td>
+					<td><label title="VIDEO" for="inputAdPod">AD POD:</label></td>
 					<td></td>
 					<td><input class="adPath" id="inputAdPod" type="text" value="" /></td>
 					<td><div class="colorBox" id="colorAdPod"><a id="clickAdPod" href="#"></a></div><div class="httpStatus" id="statusAdPod"></div></td>
 				</tr>
 				<tr>
-					<td><label title="ADPODTRACKING" for="inputAdPodTracking">AD POD TRACKING:</label></td>
+					<td><label title="VIDEO_TRACKING" for="inputAdPodTracking">AD POD TRACKING:</label></td>
 					<td></td>
 					<td><input class="thirdParty" id="inputAdPodTracking" type="text" value="" /></td>
 					<td><div class="colorBox" id="colorAdPodTracking"><a id="clickAdPodTracking" href="#"></a></div><div class="httpStatus" id="statusAdPodTracking"></div></td>
+				</tr>
+				<tr class="hide">
+					<td><label title="POSTROLL" for="inputPostroll">AD POD:</label></td>
+					<td></td>
+					<td><input class="adPath" id="inputPostroll" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPostroll"><a id="clickPostroll" href="#"></a></div><div class="httpStatus" id="statusPostroll"></div></td>
+				</tr>
+				<tr class="hide">
+					<td><label title="POSTROLL_TRACKING" for="inputPostrollTracking">AD POD TRACKING:</label></td>
+					<td></td>
+					<td><input class="thirdParty" id="inputPostrollTracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPostrollTracking"><a id="clickPostrollTracking" href="#"></a></div><div class="httpStatus" id="statusPostrollTracking"></div></td>
 				</tr>
 				<tr>
 					<td><label title="PAUSEAD" for="inputPauseAd">PAUSE AD:</label></td>
@@ -245,10 +273,10 @@
 					<td><div class="colorBox" id="colorPauseAd"><a id="clickPauseAd" href="#"></a></div><div class="httpStatus" id="statusPauseAd"></div></td>
 				</tr>
 				<tr>
-					<td><label title="PAUSEADTRACKING" for="inputPauseAdTracking">PAUSE AD TRACKING:</label></td>
+					<td><label title="PAUSEAD_TRACKING" for="inputPauseAd_Tracking">PAUSE AD TRACKING:</label></td>
 					<td></td>
-					<td><input class="thirdParty" id="inputPauseAdTracking" type="text" value="" /></td>
-					<td><div class="colorBox" id="colorPauseAdTracking"><a id="clickPauseAdTracking" href="#"></a></div><div class="httpStatus" id="statusPauseAdTracking"></div></td>
+					<td><input class="thirdParty" id="inputPauseAd_Tracking" type="text" value="" /></td>
+					<td><div class="colorBox" id="colorPauseAd_Tracking"><a id="clickPauseAd_Tracking" href="#"></a></div><div class="httpStatus" id="statusPauseAd_Tracking"></div></td>
 				</tr>
 			</table>
 			<input type="submit" value="Go!" style="width:50px">

@@ -49,15 +49,18 @@ color:#4E8EC7;
 .clip.visited {
 	background-color:#888;
 }
+.hide {
+	display:none;
+}
 #outputTable {
 	background-color:#E5F1FC;
 	border:none;
-	width:850px;
+	width:900px;
 	table-layout:fixed;
 	word-wrap:break-word;
 }
 #outputTable td.name {
-	width:160px;
+	width:200px;
 }
 #outputTable td.url {
 	width:600px;
