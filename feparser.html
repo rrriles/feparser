@@ -142,20 +142,38 @@
 			});
 			//make GET request to YQL, load returned data into "data" object
 			$.getJSON(yqlUrl, function(data) {
+				console.log(data);
 				//check if an invalid URL error was returned; if so, report failure and display error
 				if (data.error != undefined) {
 					$('div#'+statusDiv).text(data.error.description.substr(0,64));
 					$('div#'+colorDiv).css('background-color','#FF0000');
 				}
-				//check HTTP status code; report success if = 200,301,302
-				else if (data.query.diagnostics.url['http-status-code'] == '200' || data.query.diagnostics.url['http-status-code'] == '301' == data.query.diagnostics.url['http-status-code'] == '302') {
-					$('div#'+statusDiv).text('Success!');
-					$('div#'+colorDiv).css('background-color','#00FF00');
+				//check HTTP status code; report success if = 200,301,302; report failure if in 400-599 range
+				else if (data.query.diagnostics.url['http-status-code'] != undefined) {
+					if (data.query.diagnostics.url['http-status-code'].match(/200|301|302/)) {
+						$('div#'+statusDiv).text('Success!');
+						$('div#'+colorDiv).css('background-color','#00FF00');
+					}
+					else if (data.query.diagnostics.url['http-status-code'].match(/^[45]/)) {
+						$('div#'+statusDiv).text(data.query.diagnostics.url['http-status-message']);
+						$('div#'+colorDiv).css('background-color','#FF0000');
+					};
 				}
-				//check for absence of diagnostics url error; if absent, report success
+				//check if multiple status codes were returned in array (usually for robots.txt) and process accordingly
+				else if ($.isArray(data.query.diagnostics.url)) {
+					if (data.query.diagnostics.url[1]['http-status-code'].match(/^[23]/)) {
+						$('div#'+statusDiv).text('Success!');
+						$('div#'+colorDiv).css('background-color','#00FF00');
+					}
+					else if (data.query.diagnostics.url[1]['http-status-code'].match(/^[45]/)) {
+						$('div#'+statusDiv).text(data.query.diagnostics.url[1]['http-status-message']);
+						$('div#'+colorDiv).css('background-color','#FF0000');
+					};
+				}
+				//check for absence of diagnostics url error; if absent, report caution
 				else if (data.query.diagnostics.url.error == undefined) {
-					$('div#'+statusDiv).text('Success!');
-					$('div#'+colorDiv).css('background-color','#00FF00');
+					$('div#'+statusDiv).text('Caution! Check link to verify');
+					$('div#'+colorDiv).css('background-color','#FFFF00');
 				}
 				//otherwise report failure and display url error
 				else {
