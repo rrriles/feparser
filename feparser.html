@@ -159,16 +159,19 @@
 						$('div#'+colorDiv).css('background-color','#FF0000');
 					};
 				}
-				//check if multiple status codes were returned in array (usually for robots.txt) and process accordingly
+				//check if multiple status codes were returned in array (when robots.txt is returned as [0]) and process accordingly
 				else if ($.isArray(data.query.diagnostics.url)) {
-					if (data.query.diagnostics.url[1]['http-status-code'].match(/^[23]/)) {
-						$('div#'+statusDiv).text('Success!');
-						$('div#'+colorDiv).css('background-color','#00FF00');
+					var target = data.query.diagnostics.url.length-1;
+					if (data.query.diagnostics.url[target]['http-status-code']) {
+						if (data.query.diagnostics.url[target]['http-status-code'].match(/^[23]/)) {
+							$('div#'+statusDiv).text('Success!');
+							$('div#'+colorDiv).css('background-color','#00FF00');
+						}
+						else if (data.query.diagnostics.url[target]['http-status-code'].match(/^[45]/)) {
+							$('div#'+statusDiv).text(data.query.diagnostics.url[target]['http-status-message']);
+							$('div#'+colorDiv).css('background-color','#FF0000');
+						};
 					}
-					else if (data.query.diagnostics.url[1]['http-status-code'].match(/^[45]/)) {
-						$('div#'+statusDiv).text(data.query.diagnostics.url[1]['http-status-message']);
-						$('div#'+colorDiv).css('background-color','#FF0000');
-					};
 				}
 				//check for absence of diagnostics url error; if absent, report success
 				else if (data.query.diagnostics.url.error == undefined) {
