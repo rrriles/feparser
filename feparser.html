@@ -170,15 +170,15 @@
 						$('div#'+colorDiv).css('background-color','#FF0000');
 					};
 				}
-				//check for absence of diagnostics url error; if absent, report caution
+				//check for absence of diagnostics url error; if absent, report success
 				else if (data.query.diagnostics.url.error == undefined) {
-					$('div#'+statusDiv).text('Caution! Check link to verify');
-					$('div#'+colorDiv).css('background-color','#FFFF00');
+					$('div#'+statusDiv).text('Success!');
+					$('div#'+colorDiv).css('background-color','#00FF00');
 				}
 				//otherwise report failure and display url error
 				else {
 					$('div#'+statusDiv).text(data.query.diagnostics.url.error.substr(0,64));
-					$('div#'+colorDiv).css('background-color','#FFFF00');
+					$('div#'+colorDiv).css('background-color','#FF0000');
 				};
 			});
 		}
