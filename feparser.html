@@ -148,38 +148,43 @@
 					$('div#'+statusDiv).text(data.error.description.substr(0,64));
 					$('div#'+colorDiv).css('background-color','#FF0000');
 				}
-				//check HTTP status code; report success if = 200,301,302; report failure if in 400-599 range
-				else if (data.query.diagnostics.url['http-status-code'] != undefined) {
+				else if (data.query.diagnostics.url['http-status-code'] != undefined) { //check HTTP status code; report success if = 200,301,302
 					if (data.query.diagnostics.url['http-status-code'].match(/200|301|302/)) {
 						$('div#'+statusDiv).text('Success!');
 						$('div#'+colorDiv).css('background-color','#00FF00');
 					}
-					else if (data.query.diagnostics.url['http-status-code'].match(/^[45]/)) {
+					else { //otherwise, report failure
 						$('div#'+statusDiv).text(data.query.diagnostics.url['http-status-message']);
 						$('div#'+colorDiv).css('background-color','#FF0000');
 					};
 				}
-				//check if multiple status codes were returned in array (when robots.txt is returned as [0]) and process accordingly
+				//check if multiple status codes were returned in array (robots.txt response is often returned as [0]) and process accordingly
 				else if ($.isArray(data.query.diagnostics.url)) {
 					var target = data.query.diagnostics.url.length-1;
-					if (data.query.diagnostics.url[target]['http-status-code']) {
-						if (data.query.diagnostics.url[target]['http-status-code'].match(/^[23]/)) {
+					if (data.query.diagnostics.url[target]['http-status-code']) { //if http status code is returned, process it
+						if (data.query.diagnostics.url[target]['http-status-code'].match(/200|301|302/)) { //200-399 = ok
 							$('div#'+statusDiv).text('Success!');
 							$('div#'+colorDiv).css('background-color','#00FF00');
 						}
-						else if (data.query.diagnostics.url[target]['http-status-code'].match(/^[45]/)) {
+						else { //otherwise, report error
 							$('div#'+statusDiv).text(data.query.diagnostics.url[target]['http-status-message']);
 							$('div#'+colorDiv).css('background-color','#FF0000');
 						};
 					}
+					else if (data.query.diagnostics.url[target].error == undefined) { //if no status code exists, check for url error
+						$('div#'+statusDiv).text('Success!');
+						$('div#'+colorDiv).css('background-color','#00FF00');
+					}
+					else { //if error exists, output truncated error text
+						$('div#'+statusDiv).text(data.query.diagnostics.url[target].error.substr(0,64));
+						$('div#'+colorDiv).css('background-color','#FF0000');
+					};
 				}
-				//check for absence of diagnostics url error; if absent, report success
-				else if (data.query.diagnostics.url.error == undefined) {
+				else if (data.query.diagnostics.url.error == undefined) { //if url error is absent, report success
 					$('div#'+statusDiv).text('Success!');
 					$('div#'+colorDiv).css('background-color','#00FF00');
 				}
-				//otherwise report failure and display url error
-				else {
+				else { //otherwise report failure and output truncated error text
 					$('div#'+statusDiv).text(data.query.diagnostics.url.error.substr(0,64));
 					$('div#'+colorDiv).css('background-color','#FF0000');
 				};
@@ -206,7 +211,7 @@
 			encodedUrl = encodedUrl.replace(/\[timestamp\]/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/%5[Bb]timestamp%5[Dd]/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/\[RANDOM\]/g, '%TIME%');
-			outputText += '*BEGIN '+parserName+'*'+encodedUrl+'*END '+parserName+'* ';
+			outputText += '<BEGIN '+parserName+'>'+encodedUrl+'<END '+parserName+'>';
 			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
 			outputTable += '<tr><td class="name">'+parserName+'</td><td class="url">'+encodedUrl+'</td><td class="clipTd"><div id="clipDiv'+clipId+'" class="clipDiv"><div id="clipButton'+clipId+'" class="clip">Copy</div></div></td></tr>';
 		}
