@@ -37,11 +37,11 @@ input.duration {
 	margin-right:auto;
 	width:25px;
 }
-body#banner li.banner, body#skyscraper li.skyscraper, body#overlay li.overlay, body#preroll li.preroll {
+body#fep_web li.fep_web, body#dep_ipad li.fep_ipad {
 	border-bottom: 1px solid #4E8EC7;
 	background-color: #FFF;
 }
-body#banner li.banner a, body#skyscraper li.skyscraper a, body#overlay li.overlay a, body#preroll li.preroll a {
+body#fep_web li.fep_web a, body#fep_ipad li.fep_ipad a {
 	color: #FB7408;
 	background-color: #FFF;
 	position: relative;
