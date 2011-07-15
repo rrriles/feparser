@@ -22,7 +22,7 @@
 		var genPreroll = 'http://cdn.video.abc.com/streaming/ads/abccom/abc_generic_preroll_20071031_500x282_400kbps_f8.flv';
 		var genLogo = 'http://cdn.video.abc.com/streaming/ads/abccom/abcfep_300x60.jpg';
 		var genLogoClick = 'http://abc.go.com/';
-		var genPauseAd = 'http://cdn.video.abc.com/streaming/ads/abccom/house_pause_ad2011.swf';
+		var genPauseAd = 'http://cdn.video.abc.com/streaming/ads/abccom/house_pause_ad2011rev2.swf';
 		var clipParser = new ZeroClipboard.Client();
 		var clipTable = [];
 				
@@ -37,10 +37,10 @@
 			var colorDiv;
 			var colorA;
 			//clear results
-			$('textarea').text("");
-			outputText = "";
-			$('table#outputTable').text("");
-			outputTable = "";
+			$('textarea').text('');
+			outputText = '';
+			$('table#outputTable').text('');
+			outputTable = '';
 			//copy AdPod & AdPodTracking values to hidden AdPodZero and Postroll rows
 			$('input#inputAdPodZero').val($('input#inputAdPod').val());
 			$('input#inputAdPodZeroTracking').val($('input#inputAdPodTracking').val());
@@ -203,17 +203,28 @@
 		function encodeChars(inputValue,parserName,clipId) {
 			var encodedUrl = inputValue;
 			var clipParser = new ZeroClipboard.Client();
-			encodedUrl = encodedUrl.replace(/\&(?![A-Za-z]+;|#[0-9]+;)/g, "&amp;");
-			encodedUrl = encodedUrl.replace(/\|/g, "%7C");
-			encodedUrl = encodedUrl.replace(/\s/g, "%20");
-			encodedUrl = encodedUrl.replace(/ll\.media/, "cdn.video");
+			encodedUrl = encodedUrl.replace(/\&(?![A-Za-z]+;|#[0-9]+;)/g, '&amp;');
+			encodedUrl = encodedUrl.replace(/\|/g, '%7C');
+			encodedUrl = encodedUrl.replace(/\s/g, '%20');
+			encodedUrl = encodedUrl.replace(/ll\.media/, 'cdn.video');
 			encodedUrl = encodedUrl.replace(/%timestamp%/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/\[timestamp\]/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/%5[Bb]timestamp%5[Dd]/g, '%TIME%');
+			encodedUrl = encodedUrl.replace(/\[CACHEBUSTER\]/g, '%TIME%');
 			encodedUrl = encodedUrl.replace(/\[RANDOM\]/g, '%TIME%');
 			outputText += '<BEGIN '+parserName+'>'+encodedUrl+'<END '+parserName+'>';
-			encodedUrl = encodedUrl.replace(/\&amp;/g, "&amp;amp;");
+			encodedUrl = encodedUrl.replace(/\&amp;/g, '&amp;amp;');
 			outputTable += '<tr><td class="name">'+parserName+'</td><td class="url">'+encodedUrl+'</td><td class="clipTd"><div id="clipDiv'+clipId+'" class="clipDiv"><div id="clipButton'+clipId+'" class="clip">Copy</div></div></td></tr>';
+		}
+		
+		//clear all data when reset button is pushed
+		function resetAll() {
+			$('textarea').text('');
+			$('table#outputTable').text('');
+			$('div.colorBox').css('background-color','#666');
+			$('div.httpStatus').text('');
+			$('input:text').val('')
+			$('input.checkBox').prop('checked', false);
 		}
 
 	//]]>
@@ -305,7 +316,7 @@
 					<td><div class="colorBox" id="colorPauseAd_Tracking"><a id="clickPauseAd_Tracking" href="#"></a></div><div class="httpStatus" id="statusPauseAd_Tracking"></div></td>
 				</tr>
 			</table>
-			<input type="submit" value="Go!" style="width:50px">
+			<input type="submit" value="Go!" style="width:50px">  <input type="button" value="Reset" onclick="resetAll(); return false;" style="width:50px">
 		</div>
 	</form>
 	<br />

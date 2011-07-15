@@ -31,6 +31,48 @@ input.checkBox {
 	margin-left:auto;
 	margin-right:auto;
 }
+input.duration {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+	width:25px;
+}
+body#banner li.banner, body#skyscraper li.skyscraper, body#overlay li.overlay, body#preroll li.preroll {
+	border-bottom: 1px solid #4E8EC7;
+	background-color: #FFF;
+}
+body#banner li.banner a, body#skyscraper li.skyscraper a, body#overlay li.overlay a, body#preroll li.preroll a {
+	color: #FB7408;
+	background-color: #FFF;
+	position: relative;
+	top: 1px;
+	padding-top: 4px;
+}
+ul#tabNav {
+	list-style: none;
+	list-style-type: none;
+	margin: 1em 0 1em 0;
+	padding: 3px 10px 3px 10px;
+	text-align: left;
+	border-bottom: 1px solid #4E8EC7;
+}
+ul#tabNav li {
+	display: inline;
+}
+ul#tabNav li a {
+	display: inline;
+	padding: 3px 4px;
+	border: 1px solid #4E8EC7;
+	background-color: #E5F1FC;
+	color: #4E8EC7;
+	margin-right: 0px;
+	text-decoration: none;
+	border-bottom: none;
+	font-weight: bold;
+}
+ul#tabNav li a:hover {
+	background: #fff;
+}
 .clipDiv {
 	padding:0px;
 }
