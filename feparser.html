@@ -26,6 +26,9 @@
 		var clipParser = new ZeroClipboard.Client();
 		var clipTable = [];
 		var urlAnchor = self.document.location.hash.substring(1);
+		var currentTab;
+		var cssSelectedLi = {'border-bottom' : '1px solid #4E8EC7', 'background-color' : '#FFF'};
+		var cssSelectedLiA = {'color' : '#FB7408', 'background-color' : '#FFF', 'position' : 'relative', 'top' : '1px', 'padding-top' : '4px'};
 		
 		//check for anchor in URL; if none, select Web tab
 		$(document).ready(function() {
@@ -39,23 +42,23 @@
 		
 		//when tab is selected, load correct form and generic preroll path
 		function menuTab(tab) {
+			currentTab = tab;
 			$('body').attr('id',tab);
 			$('#inputTable').load(tab+'.html');
-			if (tab == 'fep_ipad') {
+			if (tab.match(/ipad/g)) {
 				genPreroll = 'http://cdn.video.abc.com/abcvideo/video_fep/h264_segmented_rev2/Preroll_generic_3g_20090723_2288889/Preroll_generic_3g_20090723_2288889.m3u8';
-			};
-			if (tab == 'fep_web') {
+			}
+			else {
 				genPreroll = 'http://cdn.video.abc.com/streaming/ads/abccom/abc_generic_preroll_20071031_500x282_400kbps_f8.flv';
 			};
 		};
 		
-		//when a checkbox is clicked, write appropriate generic path into text field and disable input
+		//when a checkbox is clicked, write appropriate generic path into text field and disable input --WORK IN PROGRESS--
 		$('input.checkBox').live('click', function() {
-			var inputId = $(this).siblings('input.adPath').attr('id');
-			console.log(inputId);
-			console.log($(this));
+			var idVar = $(this).attr('name').substring(7);
+			console.log(idVar);/*
 			if ($(this).is(':checked')) {
-				$('input#'+inputId).attr('disabled','true');
+				$('input#input'+idVar).attr('disabled','true');
 				if(inputId == 'inputPreroll') {
 					$('input#'+inputId).val(genPreroll);
 				};
@@ -71,7 +74,7 @@
 			}
 			else {
 				$('input#'+inputId).attr('disabled','false');
-			};
+			};*/
 		});
 		
 		function feParse() {
@@ -132,13 +135,25 @@
 				//set href and target for colorbox <a> element
 				$('a#'+colorA).replaceWith('<a id="'+colorA+'" href="'+inputValue+'" target="new"></a>');
 				//for each ad path: check HTTP status, encode characters, display parser-friendly code
-				if (inputClass == 'adPath') {
+				if (inputClass == 'adPath') {					
 					//set blank fields to "/" and display warning
 					if (inputValue == '' || inputValue == '/') {
 						$('input#'+inputId).val('/');
 						$('div#'+statusDiv).text('No Path');
 						$('div#'+colorDiv).css('background-color','#FFFF00');
 						parseUrl('/',labelTitle);
+					}
+					//for iPad campaigns, check that video files end in "m3u8"
+					else if (currentTab.match(/ipad/g) && inputId.match(/(Preroll|AdPod)/g)) {
+						if (inputValue.match(/m3u8$/)) {
+							requestUrl(inputValue,statusDiv,colorDiv);
+							parseUrl(inputValue,labelTitle);
+						}
+						else {
+							$('div#'+statusDiv).text('Not iPad-compatible--M3U8 file required');
+							$('div#'+colorDiv).css('background-color','#FF0000');
+							parseUrl(inputValue,labelTitle);
+						};
 					}
 					//check for Unicast container swf
 					else if (inputValue.match(/.*vwadpath=.+/)) {
@@ -282,10 +297,12 @@
 
 <body>
 	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.04</span></h1>
-	<div class="tabNav">
+	<div>
 		<ul id="tabNav">
 			<li class="fep_web"><a href="#fep_web" onclick="menuTab('fep_web');">Web</a></li>
 			<li class="fep_ipad"><a href="#fep_ipad" onclick="menuTab('fep_ipad');">iPad</a></li>
+			<li class="fep_houseweb"><a href="#fep_houseweb" onclick="menuTab('fep_houseweb');">House (Web)</a></li>
+			<li class="fep_houseipad"><a href="#fep_houseipad" onclick="menuTab('fep_houseipad');">House (iPad)</a></li>
 		</ul>
 	</div>
 	<form action="#" onsubmit="feParse(); return false;">
