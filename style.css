@@ -37,11 +37,11 @@ input.duration {
 	margin-right:auto;
 	width:25px;
 }
-body#fep_web li.fep_web, body#dep_ipad li.fep_ipad, body#fep_houseweb li.fep_houseweb, body#dep_houseipad li.fep_houseipad {
+html#fep_web li.fep_web, html#dep_ipad li.fep_ipad, html#fep_houseweb li.fep_houseweb, html#dep_houseipad li.fep_houseipad {
 	border-bottom: 1px solid #4E8EC7;
 	background-color: #FFF;
 }
-body#fep_web li.fep_web a, body#fep_ipad li.fep_ipad a, body#fep_houseweb li.fep_houseweb a, body#fep_houseipad li.fep_houseipad a {
+html#fep_web li.fep_web a, html#fep_ipad li.fep_ipad a, html#fep_houseweb li.fep_houseweb a, html#fep_houseipad li.fep_houseipad a {
 	color: #FB7408;
 	background-color: #FFF;
 	position: relative;

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>FEP Ad Parser/Encoder/Validator 1.06</title>
+		<title>FEP Ad Parser/Encoder/Validator 1.07</title>
 	</meta>
 	
 	<link rel="stylesheet" type="text/css" href="style.css" />
@@ -43,7 +43,8 @@
 		//when tab is selected, load correct form and generic preroll path
 		function menuTab(tab) {
 			currentTab = tab;
-			$('body').attr('id',tab);
+			resetAll();
+			$('html').attr('id',tab);
 			$('#inputTable').load(tab+'.html');
 			if (tab.match(/ipad/g)) {
 				genPreroll = 'http://cdn.video.abc.com/abcvideo/video_fep/h264_segmented_rev2/Preroll_generic_3g_20090723_2288889/Preroll_generic_3g_20090723_2288889.m3u8';
@@ -53,28 +54,19 @@
 			};
 		};
 		
-		//when a checkbox is clicked, write appropriate generic path into text field and disable input --WORK IN PROGRESS--
+		//when a checkbox is clicked, write appropriate generic path into text field and disable input
 		$('input.checkBox').live('click', function() {
 			var idVar = $(this).attr('name').substring(7);
-			console.log(idVar);/*
+			console.log(idVar);
 			if ($(this).is(':checked')) {
-				$('input#input'+idVar).attr('disabled','true');
-				if(inputId == 'inputPreroll') {
-					$('input#'+inputId).val(genPreroll);
-				};
-				if(inputId == 'inputLogo') {
-					$('input#'+inputId).val(genLogo);
-				};
-				if(inputId == 'inputLogoClick') {
-					$('input#'+inputId).val(genLogoClick);
-				};
-				if(inputId == 'inputPauseAd') {
-					$('input#'+inputId).val(genPauseAd);
-				};
+					$('input#'+['input'+idVar]).val(window['gen'+idVar]);
+					$('input#'+['input'+idVar]).attr('disabled','true');
 			}
 			else {
-				$('input#'+inputId).attr('disabled','false');
-			};*/
+				$('input#'+['input'+idVar]).removeAttr('disabled');
+				$('input#'+['input'+idVar]).val('');
+				console.log('yup')
+			};
 		});
 		
 		function feParse() {
@@ -112,25 +104,6 @@
 				if(inputValue != $.trim(inputValue)) {
 					inputValue = $.trim(inputValue);
 					$('input#'+inputId).val(inputValue);
-				};
-				//check for generic checkboxes; replace path if checked
-				if(genCheck) {
-					if(inputId == 'inputPreroll') {
-						inputValue = genPreroll;
-						$('input#'+inputId).val(genPreroll);
-					};
-					if(inputId == 'inputLogo') {
-						inputValue = genLogo;
-						$('input#'+inputId).val(genLogo);
-					};
-					if(inputId == 'inputLogoClick') {
-						inputValue = genLogoClick;
-						$('input#'+inputId).val(genLogoClick);
-					};
-					if(inputId == 'inputPauseAd') {
-						inputValue = genPauseAd;
-						$('input#'+inputId).val(genPauseAd);
-					};
 				};
 				//set href and target for colorbox <a> element
 				$('a#'+colorA).replaceWith('<a id="'+colorA+'" href="'+inputValue+'" target="new"></a>');
@@ -296,7 +269,7 @@
 </head>
 
 <body>
-	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.06</span></h1>
+	<h1><span class="orange">FEP</span> <span class="blue">Ad Parser/Encoder/Validator 1.07</span></h1>
 	<div>
 		<ul id="tabNav">
 			<li class="fep_web"><a href="#fep_web" onclick="menuTab('fep_web');">Web</a></li>
